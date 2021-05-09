@@ -5,16 +5,8 @@
 # Date:         2021/4/30 0:20
 # IDE:          PyCharm
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-from flask import Flask
+from app import app
 
-import settings
-
-app = Flask(__name__)
-
-app.config.from_object(settings.ProductionConfig)
-
-print('DEBUG:', app.config.get('DEBUG'))
-
-print('TESTING:', app.config.get('TESTING'))
-
-print('DATABASE_URI:', app.config.get('DATABASE_URI'))
+if __name__ == "__main__":
+    app.env = 'Development'
+    app.run()

@@ -5,14 +5,22 @@
 # Date:         2021/4/30 0:48
 # IDE:          PyCharm
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+
 class Config(object):
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+    # RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
     DEBUG = False
     TESTING = False
-    DATABASE_URI = 'sqlite://memory:'
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:123456@127.0.0.1:3306/20210430AM_flask'  # 数据库信息
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 
 class ProductionConfig(Config):
-    DATABASE_URI = 'mysql://user@localhost/foo'
+    pass
 
 
 class DevelopmentConfig(Config):
