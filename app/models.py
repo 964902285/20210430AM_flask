@@ -31,9 +31,10 @@ class User(db.Model, UserMixin):
     def generate_reset_password_token(self):
         return jwt.encode({'id': self.id}, current_app.config['SECRET_KEY'], algorithm='HS256')
 
-    def check_reset_password_token(self, token):
+    @staticmethod
+    def check_reset_password_token(token):  # 套上静态方法，就不用传入self参数（外部函数可以直接跳过该类的实例化对其进行调用）
         try:
-            data = jwt.encode({'id': self.id}, current_app.config['SECRET_KEY'], algorithm='HS256')
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             return User.query.filter_by(id=data['id']).first()
         except:
             return

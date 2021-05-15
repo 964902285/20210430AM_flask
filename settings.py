@@ -23,8 +23,8 @@ class Config(object):
     MAIL_PORT = 25
     # MAIL_USE_TLS: False
     # MAIL_USE_SSL = True
-    MAIL_USERNAME = 'xxhlovingcoding@gmail.com'
-    MAIL_PASSWORD = 'iayiay111'
+    MAIL_USERNAME = 'xxhlovingcoding@163.com'
+    MAIL_PASSWORD = 'HTUALYVDQPYKQYKO'
 
 
 class ProductionConfig(Config):

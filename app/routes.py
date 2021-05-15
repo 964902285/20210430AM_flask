@@ -9,9 +9,9 @@ from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_user, login_required, current_user, logout_user
 from werkzeug.utils import secure_filename
 
-from forms import RegisterForm, LoginForm, PasswordResetRequestForm, ResetPasswordForm
-from models import User
-from app.email import send_reset_password_mail
+from app.forms import RegisterForm, LoginForm, PasswordResetRequestForm, ResetPasswordForm
+from app.models import User
+from app.emails import send_reset_password_mail
 
 import os
 import time
@@ -145,10 +145,21 @@ def send_password_reset_request():
     return render_template('send_password_reset_request.html', form=form, title=title)
 
 
-@app.route('/reset_password', methods=['GET', 'POST'])
-def reset_password():
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
     title = "reset password."
     if current_user.is_authenticated:
         return redirect(url_for("index"))
     form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user = User.check_reset_password_token(token)
+        if user:
+            password = bcrypt.generate_password_hash(form.password.data)
+            user.password = password
+            db.session.commit()
+            flash('your password reset success!!please login with new password now!!', category='info')
+            return redirect(url_for('login'))
+        else:
+            flash('the user is not exist.', category='info')
+            return redirect(url_for('login'))
     return render_template('reset_password.html', form=form, title=title)
