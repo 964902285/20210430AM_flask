@@ -6,3 +6,5 @@ wtforms
 flask-bcrypt
 mysql-connector-python
 flask-login
+PyJWT
+flask-mail

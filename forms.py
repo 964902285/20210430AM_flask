@@ -36,3 +36,20 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=20)])
     remember = BooleanField('Remember')
     submit = SubmitField('sign in')
+
+
+class PasswordResetRequestForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Send')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if not user:
+            raise ValidationError("email not exists!! please try again!!")
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=20)])
+    confirm = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
+    # recaptcha = RecaptchaField()
+    submit = SubmitField('Reset Password')

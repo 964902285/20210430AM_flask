@@ -18,6 +18,14 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:123456@127.0.0.1:3306/20210430AM_flask'  # 数据库信息
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
+    # flask 谷歌邮件配置
+    MAIL_SERVER = 'smtp.163.com'
+    MAIL_PORT = 25
+    # MAIL_USE_TLS: False
+    # MAIL_USE_SSL = True
+    MAIL_USERNAME = 'xxhlovingcoding@gmail.com'
+    MAIL_PASSWORD = 'iayiay111'
+
 
 class ProductionConfig(Config):
     pass
