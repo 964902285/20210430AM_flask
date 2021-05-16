@@ -6,7 +6,8 @@
 # IDE:          PyCharm
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from flask_wtf.file import FileField, FileRequired
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
 from app.models import User
@@ -49,7 +50,17 @@ class PasswordResetRequestForm(FlaskForm):
 
 
 class ResetPasswordForm(FlaskForm):
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=8, max=20)])
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=8, max=20)])
     confirm = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
     # recaptcha = RecaptchaField()
     submit = SubmitField('Reset Password')
+
+
+class PostTweetForm(FlaskForm):
+    text = TextAreaField("Say something...", validators=[DataRequired(), Length(min=1, max=140)])
+    submit = SubmitField('Post Text')
+
+
+class EditProfileForm(FlaskForm):
+    photo = FileField(validators=[FileRequired()])
+    submit = SubmitField('Upload')

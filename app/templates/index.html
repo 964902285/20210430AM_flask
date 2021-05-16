@@ -1,13 +1,63 @@
 {% extends 'base.html' %}
 {% block title %}{{title}}{% endblock %}
 {% block app_content %}
-<h1>Hello, {{ current_user.username }}.</h1>
-<hr>
-{% for p in data %}
-<p>{{p}}</p>
-{% endfor %}
-<hr>
-{% for ii in img_stream %}
-<img style="width: 160px" src="data:;base64,{{ ii }}">
-{% endfor %}
+<!--{% for p in data %}-->
+<!--<p>{{p}}</p>-->
+<!--{% endfor %}-->
+<!--<hr>-->
+<!--{% for ii in img_stream %}-->
+<!--<img style="width: 160px" src="data:;base64,{{ ii }}">-->
+<!--{% endfor %}-->
+<div class="row">
+    <div class="col-md-6">
+        <h1>Hello, {{ current_user.username }}.</h1>
+        <hr>
+        {% import 'bootstrap/wtf.html' as wtf %}
+        {{ wtf.quick_form(form) }}
+        <hr>
+        {% include 'post_content.html' %}
+        <hr>
+        <nav aria-label="Page navigation">
+            <center>
+                <ul class="pagination">
+
+                    <li class="{% if not posts.has_prev %}disabled{% endif %}">
+                        <a href="{{ url_for('index', page=posts.prev_num) }}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo; pre</span>
+                        </a>
+                    </li>
+
+                    {% for i in posts.iter_pages(right_current=3) %}
+                    {% if i %}
+                    <li class="{% if i == posts.page %}active{% endif %}"><a href="{{ url_for('index', page=i) }}">{{ i
+                        }}</a></li>
+                    {% else %}
+                    <li class="disabled"><a href="#">...</a></li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="{% if not posts.has_next %}disabled{% endif %}">
+                        <a href="{{ url_for('index', page=posts.next_num) }}" aria-label="Next">
+                            <span aria-hidden="true">next &raquo;</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </center>
+        </nav>
+    </div>
+    <div class="col-md-3 col-md-offset-2">
+        <div class="thumbnail text-center">
+            <br>
+            <a href="{{ url_for('user_page', username=current_user.username) }}">
+                <img src="{{ current_user.avatar_img }}" alt="avatar" width="100px"></a>
+            <div class="caption">
+                <h3>{{ current_user.username }}</h3>
+                <p>
+                    <a href="#" class="btn btn-primary" role="button">{{ n_followers }} followers</a>
+                    <a href="#" class="btn btn-default" role="button">{{ n_followed }} followed</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

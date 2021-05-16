@@ -9,8 +9,9 @@ from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_user, login_required, current_user, logout_user
 from werkzeug.utils import secure_filename
 
-from app.forms import RegisterForm, LoginForm, PasswordResetRequestForm, ResetPasswordForm
-from app.models import User
+from app.forms import RegisterForm, LoginForm, PasswordResetRequestForm, ResetPasswordForm, PostTweetForm, \
+    EditProfileForm
+from app.models import User, Post
 from app.emails import send_reset_password_mail
 
 import os
@@ -19,7 +20,7 @@ import cv2
 
 from app import app, bcrypt, db
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'JPG', 'PNG', 'bmp'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'JPG', 'PNG', 'bmp', 'jpeg'])
 
 
 def allowed_file(filename):
@@ -41,20 +42,74 @@ def return_img_stream(img_local_path):
     return img_stream
 
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
     img_index = [1, 2]
     img_lis = []
     title = "Flask&Mysql collect web"
-    for i in os.listdir("app/static/imgs/"):
+    form = PostTweetForm()
+    if form.validate_on_submit():
+        body = form.text.data
+        post = Post(body=body)
+        current_user.post.append(post)
+        db.session.commit()
+        flash('post text success!!', category='success')
 
+    n_followers = len(current_user.followers)
+    n_followed = len(current_user.followed)
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.pub_time.desc()).paginate(page, 2, False)
+    for i in os.listdir("app/static/imgs/"):
         img_path = f"app/static/imgs/{i}"
         img_stream = return_img_stream(img_path)
-
         img_lis.append(img_stream)
 
-    return render_template("index.html", title=title, data=img_index, img_stream=img_lis)
+    return render_template("index.html", title=title, img_stream=img_lis, form=form,
+                           n_followers=n_followers, n_followed=n_followed, posts=posts)
+
+
+@app.route('/user_page/<username>')
+@login_required
+def user_page(username):
+    title = "user page."
+    user = User.query.filter_by(username=username).first()
+    if user:
+        page = request.args.get('page', 1, type=int)
+        posts = Post.query.filter_by(user_id=user.id).order_by(Post.pub_time.desc()).paginate(page, 2, False)
+        return render_template("user_page.html", title=title, user=user, posts=posts)
+    else:
+        return '404'
+
+
+@app.route('/follow/<username>')
+@login_required
+def follow(username):
+    title = "follow page."
+    user = User.query.filter_by(username=username).first()
+    if user:
+        current_user.follow(user)
+        db.session.commit()
+        page = request.args.get('page', 1, type=int)
+        posts = Post.query.filter_by(user_id=user.id).order_by(Post.pub_time.desc()).paginate(page, 5, False)
+        return render_template("user_page.html", title=title, user=user, posts=posts)
+    else:
+        return '404'
+
+
+@app.route('/unfollow/<username>')
+@login_required
+def unfollow(username):
+    title = "unfollow page."
+    user = User.query.filter_by(username=username).first()
+    if user:
+        current_user.unfollow(user)
+        db.session.commit()
+        page = request.args.get('page', 1, type=int)
+        posts = Post.query.filter_by(user_id=user.id).order_by(Post.pub_time.desc()).paginate(page, 5, False)
+        return render_template("user_page.html", title=title, user=user, posts=posts)
+    else:
+        return '404'
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -163,3 +218,23 @@ def reset_password(token):
             flash('the user is not exist.', category='info')
             return redirect(url_for('login'))
     return render_template('reset_password.html', form=form, title=title)
+
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    title = 'edit profile page'
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        f = form.photo.data
+
+        if f.filename == '':
+            flash('no file select!', category='danger')
+            return render_template('edit_profile.html', form=form)
+        if f and allowed_file(f.filename):
+            filename = secure_filename(f.filename)
+            f.save(os.path.join('app', 'static', 'imgs', filename))
+            current_user.avatar_img = '/static/imgs/' + filename
+            db.session.commit()
+            flash("edit profile success.", category='success')
+            return redirect(url_for('user_page', username=current_user.username))
+    return render_template('edit_profile.html', form=form, title=title)
